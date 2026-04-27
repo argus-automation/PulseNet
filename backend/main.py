@@ -631,6 +631,55 @@ def deactivate_user(user_id: int, db: Session = Depends(get_db),
 def health():
     return {"status": "ok", "version": "2.0.0"}
 
+# ─── Public stats (no auth — safe for login page) ────────────────────────────
+@app.get("/api/public/stats")
+def public_stats():
+    """
+    Returns a small, safe subset of stats for the login page panel.
+    No authentication required. Never exposes user data or sensitive info.
+    """
+    db = SessionLocal()
+    try:
+        total = db.query(func.count(SpeedTestResult.id)).scalar() or 0
+        latest = (db.query(SpeedTestResult)
+                  .order_by(SpeedTestResult.timestamp.desc())
+                  .first())
+        schedule = _load_schedule()
+        job = scheduler.get_job("auto_speedtest")
+        next_run = job.next_run_time.isoformat() if (job and job.next_run_time) else None
+
+        # 24-hour averages
+        cutoff = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        rows_24h = (db.query(SpeedTestResult)
+                    .filter(SpeedTestResult.timestamp >= cutoff)
+                    .all())
+
+        avg_dl = round(sum(r.download_mbps for r in rows_24h) / len(rows_24h), 2) if rows_24h else None
+        avg_ul = round(sum(r.upload_mbps   for r in rows_24h) / len(rows_24h), 2) if rows_24h else None
+        avg_pg = round(sum(r.ping_ms       for r in rows_24h) / len(rows_24h), 2) if rows_24h else None
+
+        return {
+            "total_tests":       total,
+            "tests_last_24h":    len(rows_24h),
+            "is_running":        _is_running,
+            "schedule_enabled":  schedule.get("enabled", False),
+            "interval_minutes":  schedule.get("interval_minutes", 60),
+            "next_run":          next_run,
+            "latest": {
+                "timestamp":    latest.timestamp.isoformat() + "Z",
+                "download_mbps": round(latest.download_mbps, 2),
+                "upload_mbps":   round(latest.upload_mbps,   2),
+                "ping_ms":       round(latest.ping_ms,        2),
+            } if latest else None,
+            "avg_24h": {
+                "download_mbps": avg_dl,
+                "upload_mbps":   avg_ul,
+                "ping_ms":       avg_pg,
+            } if rows_24h else None,
+        }
+    finally:
+        db.close()
+
 # ─── Speedtest ────────────────────────────────────────────────────────────────
 @app.post("/api/speedtest/run")
 def run_test(background_tasks: BackgroundTasks, _: User = Depends(get_current_user)):
@@ -648,6 +697,7 @@ def get_status(_: User = Depends(get_current_user)):
         "schedule":   cfg,
         "next_scheduled_run": job.next_run_time.isoformat() if job and job.next_run_time else None,
     }
+
 
 # ─── Results ─────────────────────────────────────────────────────────────────
 @app.get("/api/results")

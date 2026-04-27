@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Zap, Wifi, Activity, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Zap, Wifi, Activity, AlertCircle, Clock, BarChart2, Database, Download, Bell, CheckCircle, Loader } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -83,11 +83,154 @@ function Field({ label, type = 'text', value, onChange, placeholder, error, righ
   )
 }
 
+
+/* ── Public stats hook (no auth needed) ──────────────────────────────────── */
+function usePublicStats() {
+  const [stats, setStats] = useState(null)
+  const [online, setOnline] = useState(true)
+
+  useEffect(() => {
+    const BASE = import.meta.env.VITE_API_URL || '/api'
+
+    const fetch_ = () =>
+      fetch(`${BASE}/public/stats`)
+        .then(r => { if (!r.ok) throw new Error(); return r.json() })
+        .then(d => { setStats(d); setOnline(true) })
+        .catch(() => setOnline(false))
+
+    fetch_()
+    const id = setInterval(fetch_, 15000)   // refresh every 15 s
+    return () => clearInterval(id)
+  }, [])
+
+  return { stats, online }
+}
+
+/* ── Smart relative time ─────────────────────────────────────────────────── */
+function relativeTime(isoString) {
+  if (!isoString) return null
+  const diff = Math.floor((Date.now() - new Date(isoString)) / 1000)
+  if (diff < 60)   return `${diff}s ago`
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400)return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
+}
+
+/* ── Countdown ───────────────────────────────────────────────────────────── */
+function useCountdown(targetISO) {
+  const [label, setLabel] = useState('')
+  useEffect(() => {
+    if (!targetISO) return
+    const tick = () => {
+      const diff = new Date(targetISO) - Date.now()
+      if (diff <= 0) { setLabel('any moment'); return }
+      const m = Math.floor(diff / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      setLabel(m > 0 ? `${m}m ${s.toString().padStart(2,'0')}s` : `${s}s`)
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [targetISO])
+  return label
+}
+
+
+/* ── Reusable pill components ───────────────────────────────────────────── */
+function LivePill({ icon: Icon, color, label, value, sub, loading, pulse }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '11px 16px', marginBottom: 8,
+      background: 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      borderRadius: 10, backdropFilter: 'blur(4px)',
+      transition: 'border-color 0.2s',
+    }}>
+      <div style={{
+        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+        background: color + '20',
+        border: `1px solid ${color}40`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'relative',
+      }}>
+        <Icon size={15} color={color} />
+        {pulse && (
+          <span style={{
+            position: 'absolute', top: -2, right: -2,
+            width: 8, height: 8, borderRadius: '50%',
+            background: '#00e5a0',
+            boxShadow: '0 0 6px rgba(0,229,160,0.8)',
+            animation: 'pulse-ring 1.5s ease-out infinite',
+          }} />
+        )}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 10, fontFamily: 'var(--font-mono)',
+          color: 'rgba(255,255,255,0.35)',
+          textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2,
+        }}>{label}</div>
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Loader size={11} color="rgba(255,255,255,0.2)"
+              style={{ animation: 'spin-slow 1.5s linear infinite' }} />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)',
+                           fontFamily: 'var(--font-mono)' }}>Loading…</span>
+          </div>
+        ) : (
+          <div style={{
+            fontSize: 13, fontFamily: 'var(--font-display)', fontWeight: 600,
+            color: 'rgba(255,255,255,0.85)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>{value}</div>
+        )}
+        {sub && !loading && (
+          <div style={{ fontSize: 10, color: color, fontFamily: 'var(--font-mono)',
+                        marginTop: 1, opacity: 0.8 }}>{sub}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function StaticPill({ icon: Icon, color, label, sub }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '9px 16px', marginBottom: 8,
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(255,255,255,0.05)',
+      borderRadius: 10,
+    }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: 7, flexShrink: 0,
+        background: color + '15',
+        border: `1px solid ${color}30`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={13} color={color} />
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--font-display)', fontWeight: 600,
+                      color: 'rgba(255,255,255,0.7)' }}>{label}</div>
+        {sub && (
+          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)',
+                        color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{sub}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ── Main Login page ─────────────────────────────────────────────────────── */
 export default function Login() {
   const navigate  = useNavigate()
   const { login } = useAuth()
   const { theme, toggle } = useTheme()
+
+  const { stats, online } = usePublicStats()
+  const countdown = useCountdown(stats?.next_run)
 
   const [tab,     setTab]     = useState('login')   // 'login' | 'register'
   const [email,   setEmail]   = useState('')
@@ -153,26 +296,212 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Stats preview */}
-          {[
-            { icon: Activity, label: 'Real-time monitoring', color: '#00d4f5' },
-            { icon: Wifi,     label: 'Auto-scheduled tests', color: '#ff7b2e' },
-            { icon: Zap,      label: 'Instant alerts',       color: '#00e5a0' },
-          ].map(({ icon: Icon, label, color }) => (
-            <div key={label} style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '12px 20px', marginBottom: 10,
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: 10, backdropFilter: 'blur(4px)',
+
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.35)',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: 12,
+              textAlign: 'center'
             }}>
-              <Icon size={18} color={color} />
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600,
-                             fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>
-                {label}
-              </span>
+              Live Stats
             </div>
-          ))}
+            
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 16,
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}></div>
+
+
+          {/* ── Live stats pills ── */}
+
+          <div style={{ 
+            width: '100%', 
+            display: 'flex', 
+            flexDirection: 'row', 
+            gap: 16,
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            marginBottom: 24
+          }}>
+
+
+            {/* Pill 1 — Last test result */}
+            <LivePill
+              icon={Activity}
+              color="#00d4f5"
+              label="Last speed test"
+              value={
+                stats?.latest
+                  ? `↓ ${stats.latest.download_mbps} · ↑ ${stats.latest.upload_mbps} Mbps`
+                  : 'No tests run yet'
+              }
+              sub={stats?.latest ? relativeTime(stats.latest.timestamp) : null}
+              loading={!stats}
+            />
+
+            {/* Pill 2 — Scheduler status */}
+            <LivePill
+              icon={Clock}
+              color="#ff7b2e"
+              label={stats?.schedule_enabled ? 'Next scheduled test' : 'Auto-schedule'}
+              value={
+                stats?.is_running
+                  ? 'Test running now…'
+                  : stats?.schedule_enabled && countdown
+                    ? `in ${countdown}`
+                    : stats?.schedule_enabled
+                      ? 'Calculating…'
+                      : 'Not configured'
+              }
+              sub={
+                stats?.schedule_enabled && stats?.interval_minutes
+                  ? `Every ${stats.interval_minutes >= 60
+                      ? stats.interval_minutes / 60 + 'h'
+                      : stats.interval_minutes + 'm'}`
+                  : null
+              }
+              loading={!stats}
+              pulse={stats?.is_running}
+            />
+
+            {/* Pill 3 — Total tests */}
+            <LivePill
+              icon={BarChart2}
+              color="#00e5a0"
+              label="Tests recorded"
+              value={
+                stats
+                  ? `${stats.total_tests} total · ${stats.tests_last_24h} in last 24h`
+                  : '—'
+              }
+              loading={!stats}
+            />
+
+
+          {/* 24h averages bar */}
+          {stats?.avg_24h?.download_mbps && (
+            <div style={{
+              marginTop: 20, padding: '10px 16px',
+              background: 'rgba(0,212,245,0.06)',
+              border: '1px solid rgba(0,212,245,0.15)',
+              borderRadius: 10, display: 'flex', gap: 20,
+              justifyContent: 'center', flexWrap: 'wrap',
+            }}>
+              {[
+                { label: '24h avg ↓', value: stats.avg_24h.download_mbps, unit: 'Mbps', color: '#00d4f5' },
+                { label: '24h avg ↑', value: stats.avg_24h.upload_mbps,   unit: 'Mbps', color: '#ff7b2e' },
+                { label: 'Avg latency', value: stats.avg_24h.ping_ms,     unit: 'ms',   color: '#00e5a0' },
+              ].map(({ label, value, unit, color }) => (
+                <div key={label} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
+                                fontFamily: 'var(--font-mono)', textTransform: 'uppercase',
+                                letterSpacing: '0.5px', marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: 14, color }}>
+                    {value} <span style={{ fontSize: 10, opacity: 0.7 }}>{unit}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+
+
+            {/* Divider */}
+            <div style={{ 
+              height: 1, 
+              background: 'rgba(255,255,255,0.06)', 
+              margin: '16px 0 16px 0',
+              width: '100%'
+            }} />
+
+
+
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 11,
+              color: 'rgba(255,255,255,0.35)',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: 12,
+              textAlign: 'center'
+            }}>
+              Features
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 16,
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              {/* Pill 4 — Multi-database */}
+              <StaticPill 
+                icon={Database} 
+                color="#a855f7"
+                label="Multi-database support"
+                sub="SQLite · PostgreSQL · MySQL"
+                style={{ flex: 1, minWidth: 180 }}
+              />
+
+              {/* Pill 5 — Export */}
+              <StaticPill 
+                icon={Download} 
+                color="#00d4f5"
+                label="Export test results"
+                sub="CSV · XLSX · PDF"
+                style={{ flex: 1, minWidth: 180 }}
+              />
+
+              {/* Pill 6 — Alerts */}
+              <StaticPill 
+                icon={Bell} 
+                color="#ff7b2e"
+                label="Threshold-based alerting"
+                sub="Discord · Telegram · Email · Webhook"
+                style={{ flex: 1, minWidth: 180 }}
+              />
+            </div>
+          </div>
+
+
+
+            {/* Divider */}
+            <div style={{ 
+              height: 1, 
+              background: 'rgba(255,255,255,0.06)', 
+              margin: '16px 0 16px 0',
+              width: '100%'
+            }} />
+
+
+          {/* System status indicator */}
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            color: online ? 'rgba(0,229,160,0.7)' : 'rgba(239,68,68,0.7)',
+          }}>
+            <span style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: online ? '#00e5a0' : '#ef4444',
+              boxShadow: online ? '0 0 6px rgba(0,229,160,0.5)' : 'none',
+              marginRight: 6
+            }} />
+            {online ? 'System online' : 'Cannot reach server'}
+          </div>
         </div>
       </div>
 
@@ -312,7 +641,7 @@ export default function Login() {
 
         <div style={{ marginTop: 24, fontFamily: 'var(--font-mono)', fontSize: 11,
                       color: 'var(--text-muted)', textAlign: 'center' }}>
-          v1.0.0
+          PulseNet v1.0.0 · Internet SpeedTest Tracker
         </div>
       </div>
 

@@ -74,13 +74,13 @@ export default function Dashboard({ isRunning, setIsRunning, onRefresh }) {
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px', lineHeight: 1.1 }}>
             Network Dashboard
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>Real-time speed monitoring & analysis</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>Live connection monitoring & performance analysis</p>
         </div>
         <button className="btn btn-primary" onClick={handleRun} disabled={isRunning} style={{ fontSize: 14, padding: '10px 22px' }}>
           {isRunning ? (
             <><RefreshCw size={15} style={{ animation: 'spin-slow 1s linear infinite' }} /> Running test…</>
           ) : (
-            <><Play size={15} strokeWidth={2.5} /> Run Speed Test</>
+            <><Play size={15} strokeWidth={2.5} /> Run Test</>
           )}
         </button>
       </div>
@@ -95,17 +95,17 @@ export default function Dashboard({ isRunning, setIsRunning, onRefresh }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
 
         {/* Download */}
-        <MetricCard accentColor="var(--accent-cyan)" title="Download">
+        <MetricCard accentColor="var(--accent-cyan)" title="DOWNLOAD ↓">
           <SpeedGauge value={dl} max={200} label="Mbps" color="var(--accent-cyan)" size={160} />
         </MetricCard>
 
         {/* Upload */}
-        <MetricCard accentColor="var(--accent-orange)" title="Upload">
+        <MetricCard accentColor="var(--accent-orange)" title="UPLOAD ↑">
           <SpeedGauge value={ul} max={200} label="Mbps" color="var(--accent-orange)" size={160} />
         </MetricCard>
 
         {/* Ping */}
-        <MetricCard accentColor="var(--accent-green)" title="Latency / Ping">
+        <MetricCard accentColor="var(--accent-green)" title="LATENCY">
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 52, fontWeight: 600, color: 'var(--accent-green)', lineHeight: 1 }}>
@@ -129,14 +129,14 @@ export default function Dashboard({ isRunning, setIsRunning, onRefresh }) {
         </MetricCard>
 
         {/* Session Stats */}
-        <MetricCard accentColor="var(--accent-purple)" title="Session Stats">
+        <MetricCard accentColor="var(--accent-purple)" title="Session Summary">
           {stats?.count ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10, width: '100%', padding: '0 4px' }}>
-              <StatRow label="Tests run" value={stats.count} />
+              <StatRow label="Total tests" value={stats.count} />
               <div style={{ height: 1, background: 'var(--border-subtle)' }} />
-              <StatRow label="Avg download" value={`${stats.avg_download}`} unit="Mbps" color="var(--accent-cyan)" />
+              <StatRow label="Avg. download" value={`${stats.avg_download}`} unit="Mbps" color="var(--accent-cyan)" />
               <StatRow label="Avg upload" value={`${stats.avg_upload}`} unit="Mbps" color="var(--accent-orange)" />
-              <StatRow label="Best ping" value={`${stats.min_ping}`} unit="ms" color="var(--accent-green)" />
+              <StatRow label="Best latency" value={`${stats.min_ping}`} unit="ms" color="var(--accent-green)" />
               <div style={{ height: 1, background: 'var(--border-subtle)' }} />
               <StatRow label="Peak download" value={`${stats.max_download}`} unit="Mbps" color="var(--accent-cyan)" />
               <StatRow label="Peak upload" value={`${stats.max_upload}`} unit="Mbps" color="var(--accent-orange)" />
@@ -152,8 +152,8 @@ export default function Dashboard({ isRunning, setIsRunning, onRefresh }) {
       {/* Chart */}
       <div className="card" style={{ padding: '24px' }}>
         <div style={{ marginBottom: 20 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Speed History</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Last 30 tests</p>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Speed & Latency Timeline</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Download, upload, and latency over the selected period</p>
         </div>
         <ResultsChart results={results} showRangeSelector={true} />
       </div>
@@ -161,12 +161,12 @@ export default function Dashboard({ isRunning, setIsRunning, onRefresh }) {
       {/* Latest info bar */}
       {latest && (
         <div className="card" style={{ padding: '16px 22px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Latest test</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Last test</div>
           <InfoChip label="Server" value={latest.server_name || '—'} />
           <InfoChip label="ISP" value={latest.isp || '—'} />
-          <InfoChip label="IP" value={latest.ip_address || '—'} />
+          <InfoChip label="IP address" value={latest.ip_address || '—'} />
           <div style={{ marginLeft: 'auto' }}>
-            <button className="btn btn-secondary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => setSelected(latest)}>View details</button>
+            <button className="btn btn-secondary" style={{ fontSize: 12, padding: '6px 14px' }} onClick={() => setSelected(latest)}>View full result</button>
           </div>
         </div>
       )}

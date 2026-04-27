@@ -1,0 +1,44 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pulsenet-backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - speedtest-data:/data
+    networks:
+      - pulsenet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pulsenet-frontend
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pulsenet
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+
+volumes:
+  speedtest-data:
+
+networks:
+  pulsenet:
+    driver: bridge

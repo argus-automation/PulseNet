@@ -187,7 +187,7 @@ export default function Sidebar({ isRunning, collapsed, onToggle }) {
         )}
 
         {!collapsed && (
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textAlign: 'center', marginTop: 10 }}>v2.0.0</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textAlign: 'center', marginTop: 10 }}>v1.0.0</div>
         )}
       </div>
     </aside>

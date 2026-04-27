@@ -47,9 +47,9 @@ export default function History() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
-            Test History
+            Speed Test History
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>{total} total records</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>{total} results recorded</p>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -105,15 +105,15 @@ export default function History() {
         <>
           {(view === 'both' || view === 'chart') && (
             <div className="card" style={{ padding: '24px' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>Performance Over Time</h2>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>Speed & Latency Trends</h2>
               <ResultsChart results={results} showRangeSelector={true} />
             </div>
           )}
           {(view === 'both' || view === 'table') && (
             <div className="card" style={{ overflow: 'hidden' }}>
               <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>All Results</h2>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>Click any row to view full details</p>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Test Results</h2>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, fontFamily: 'var(--font-mono)' }}>Select a test to view full details</p>
               </div>
               <ResultsTable results={results} onSelect={setSelected} onDelete={handleDelete} />
             </div>

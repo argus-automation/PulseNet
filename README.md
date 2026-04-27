@@ -235,36 +235,152 @@ docker compose --profile mysql up --build -d
 
 ### Local Development (No Docker)
 
-**Backend**
+#### Backend
+
+**1. Navigate to the backend directory**
 
 ```bash
 cd backend
+```
 
-# Create and activate a virtual environment
+**2. Create and activate a virtual environment**
+
+```bash
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+```
 
-# Install dependencies
+Activate it based on your operating system:
+
+| OS | Command |
+|---|---|
+| Linux / macOS / WSL | `source venv/bin/activate` |
+| Windows (CMD) | `venv\Scripts\activate.bat` |
+| Windows (PowerShell) | `venv\Scripts\Activate.ps1` |
+
+You should see `(venv)` prefixed in your terminal prompt once active.
+
+**3. Install dependencies**
+
+```bash
 pip install -r requirements.txt
+```
 
-# Copy and edit the env file
+**4. Create the local data directory**
+
+SQLite needs a folder to write the database file into. Create one inside the
+backend directory:
+
+```bash
+mkdir -p data
+```
+
+**5. Configure the environment file**
+
+Copy the default env file:
+
+```bash
 cp .env .env.local
+```
 
-# Run the development server
+Open `.env` and update the `DATABASE_URL` from the Docker absolute path to a
+relative path that works on your local machine:
+
+```env
+# BEFORE — Docker only (requires the /data volume to be mounted):
+DATABASE_URL=sqlite:////data/speedtest.db
+
+# AFTER — Local development (stores the database inside the project):
+DATABASE_URL=sqlite:///./data/speedtest.db
+```
+
+> [!Note] Why the difference?
+> SQLite connection strings follow this convention:
+> - `sqlite:///./data/speedtest.db` — **three slashes** = relative path from
+>   the working directory. Works anywhere.
+> - `sqlite:////data/speedtest.db` — **four slashes** = absolute path starting
+>   at `/data`. Only works inside Docker where that volume is mounted.
+>
+> When switching back to Docker, revert this line to four slashes.
+
+
+> [!Tip]
+> Optionally, add the local data folder to `.gitignore` so the database file is
+never accidentally committed to version control:
+>
+> ```bash
+> echo "backend/data/" >> ../.gitignore
+> ```
+
+**6. Start the development server**
+
+```bash
 uvicorn main:app --reload --port 8000
 ```
 
-The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+The `--reload` flag watches for file changes and restarts the server
+automatically — useful during development.
 
-**Frontend**
+| URL | Description |
+|---|---|
+| `http://localhost:8000` | REST API base |
+| `http://localhost:8000/docs` | Interactive Swagger UI |
+| `http://localhost:8000/redoc` | ReDoc API documentation |
+
+
+##### Notes for WSL Users
+
+If you are running on Windows Subsystem for Linux and would prefer to keep the
+`DATABASE_URL` unchanged (four slashes), you can instead create the `/data`
+directory directly on WSL:
+
+```bash
+sudo mkdir -p /data
+sudo chown $USER:$USER /data
+```
+
+The backend will then be able to create the database file at `/data/speedtest.db`
+exactly as it does inside Docker. The relative path method described in Step 5
+is still recommended as it keeps everything self-contained within the project
+folder and avoids writing outside the project tree.
+
+---
+
+##### Switching Back to Docker
+
+When you are done with local development and want to run via Docker Compose again,
+remember to revert the `DATABASE_URL` in `backend/.env`:
+
+```env
+# Revert to this for Docker:
+DATABASE_URL=sqlite:////data/speedtest.db
+```
+
+Then rebuild and start:
+
+```bash
+docker compose up --build -d
+```
+
+
+---
+
+#### Frontend
+
+Open a second terminal, navigate to the frontend directory, and run:
 
 ```bash
 cd frontend
-
 npm install
 npm run dev     # Starts on http://localhost:3000
-                # /api requests are proxied to http://localhost:8000
 ```
+
+The Vite dev server proxies all `/api` requests to `http://localhost:8000`
+automatically — no extra configuration needed.
+
+| URL | Description |
+|---|---|
+| `http://localhost:3000` | React application |
+
 
 ---
 

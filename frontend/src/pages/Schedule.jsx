@@ -89,10 +89,10 @@ export default function Schedule() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>
-            Auto-Schedule
+            Schedule Tests
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-            Configure automated speed tests to run at set intervals
+            Automate speed tests at a fixed interval
           </p>
         </div>
         <button className="btn btn-secondary" onClick={load} style={{ padding: '8px 14px', fontSize: 12 }}>
@@ -110,8 +110,8 @@ export default function Schedule() {
           <div className="card" style={{ padding: '20px 22px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Enable auto-scheduling</div>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 3 }}>Automatically run speed tests at the configured interval</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Enable automatic testing</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 3 }}>Run speed tests automatically on the interval below</div>
               </div>
               <div
                 onClick={() => setConfig((c) => ({ ...c, enabled: !c.enabled }))}
@@ -136,8 +136,8 @@ export default function Schedule() {
 
           {/* Interval presets */}
           <div className="card" style={{ padding: '20px 22px' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 4 }}>Test interval</div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>How often to run an automatic speed test</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 4 }}>Run interval</div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>How frequently to run each automated test</div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
               {PRESETS.map((p) => (
@@ -155,7 +155,7 @@ export default function Schedule() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>Custom:</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>Custom interval:</span>
               <input
                 type="number" min={1} max={10080}
                 value={config.interval_minutes}
@@ -178,7 +178,7 @@ export default function Schedule() {
             display: 'flex', gap: 12, fontSize: 13, color: 'var(--text-secondary)',
           }}>
             <AlertCircle size={16} color="var(--accent-orange)" style={{ flexShrink: 0, marginTop: 1 }} />
-            <span>Scheduled tests run in the background. Each test takes approximately 30–60 seconds. All results are saved automatically and visible in the History page.</span>
+            <span>Tests run silently in the background and take 30–60 seconds each. All results are saved and available on the History page.</span>
           </div>
 
           {/* Save button */}
@@ -189,7 +189,7 @@ export default function Schedule() {
             ) : saved ? (
               <><CheckCircle size={16} /> Schedule saved!</>
             ) : (
-              <><Calendar size={16} /> Save schedule</>
+              <><Calendar size={16} /> Save & apply</>
             )}
           </button>
         </div>
@@ -216,7 +216,7 @@ export default function Schedule() {
 
             {isActive && nextRun ? (
               <>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Next run in</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>NEXT TEST IN</div>
                 <Countdown targetISO={nextRun} />
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
                   {format(parseISO(nextRun.replace('+00:00', 'Z')), 'MMM d, HH:mm:ss')}
@@ -260,9 +260,9 @@ export default function Schedule() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-cyan)' }}>↓{r.download_mbps}</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-orange)' }}>↑{r.upload_mbps}</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-green)' }}>{r.ping_ms}ms</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-cyan)' }}>↓ {r.download_mbps} Mbps</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-orange)' }}>↑ {r.upload_mbps} Mbps</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-green)' }}>⏱ {r.ping_ms} ms </span>
                     </div>
                   </div>
                 ))}

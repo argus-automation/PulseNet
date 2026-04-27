@@ -144,7 +144,7 @@ function ProfileTab({ user, onRefresh, toast }) {
 
   return (
     <div>
-      <Section title="Avatar & Identity">
+      <Section title="Profile Information">
         {/* Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 22 }}>
           <div onClick={() => fileRef.current.click()}
@@ -191,11 +191,11 @@ function ProfileTab({ user, onRefresh, toast }) {
         </div>
         <button className="btn btn-primary" onClick={saveProfile} disabled={saving}
           style={{ marginTop: 4 }}>
-          <Save size={14} /> {saving ? 'Saving…' : 'Save profile'}
+          <Save size={14} /> {saving ? 'Saving…' : 'Save changes'}
         </button>
       </Section>
 
-      <Section title="Change Password">
+      <Section title="Password & Security">
         <Inp label="Current password" type={showPw ? 'text' : 'password'}
           value={curPw} onChange={setCurPw} placeholder="••••••••" />
         <Inp label="New password" type={showPw ? 'text' : 'password'}
@@ -232,13 +232,13 @@ function ProfileTab({ user, onRefresh, toast }) {
           value={confPw} onChange={setConfPw} placeholder="••••••••" />
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 4 }}>
           <button className="btn btn-primary" onClick={savePassword} disabled={saving || !curPw || !newPw || !confPw}>
-            <Shield size={14} /> {saving ? 'Updating…' : 'Update password'}
+            <Shield size={14} /> {saving ? 'Updating…' : 'Change password'}
           </button>
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
                           fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-display)', fontWeight: 600 }}>
             <input type="checkbox" checked={showPw} onChange={e => setShowPw(e.target.checked)}
               style={{ accentColor: 'var(--accent-cyan)' }} />
-            Show passwords
+            Show / hide passwords
           </label>
         </div>
       </Section>
@@ -283,29 +283,19 @@ function BackupTab({ toast }) {
 
   return (
     <div>
-      <Section title="Create Backup">
+      <Section title="Export backup">
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 18, lineHeight: 1.6 }}>
           Downloads all speed test results as a JSON file. This file can be used to restore data
           on any PulseNet instance. Backups include timestamps, all speed metrics, server info, and ISP data.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-          {[['Format', 'JSON'], ['Includes', 'All results + metadata'], ['Passwords', 'Not included']].map(([k, v]) => (
-            <div key={k} style={{
-              padding: '8px 14px', background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-            }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)',
-                            textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>{k}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{v}</div>
-            </div>
-          ))}
         </div>
         <button className="btn btn-primary" onClick={handleBackup} style={{ marginTop: 4 }}>
           <Download size={15} /> Download backup
         </button>
       </Section>
 
-      <Section title="Restore from Backup">
+      <Section title="Import backup">
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.6 }}>
           Upload a previously exported <code>.json</code> backup file. Existing records with the same ID
           will be skipped — only new records will be imported.
@@ -322,9 +312,9 @@ function BackupTab({ toast }) {
         >
           <Upload size={28} color="var(--text-muted)" style={{ marginBottom: 10 }} />
           <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: 'var(--text-secondary)', fontSize: 14 }}>
-            {restoring ? 'Restoring…' : 'Click to upload backup file'}
+            {restoring ? 'Restoring…' : 'Drop or click to upload a backup file'}
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>pulsenet-backup-*.json</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Accepted format: pulsenet-backup-YYYY-MM-DD.json</div>
         </div>
         <input ref={fileRef} type="file" accept=".json" hidden onChange={handleRestore} />
 
@@ -387,7 +377,7 @@ function AlertsTab({ toast }) {
         <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13,
                      color: 'var(--text-primary)', marginBottom: 14,
                      paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-          Speed Thresholds
+          Alert thresholds
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           <Inp label="Min download (Mbps)" type="number" value={cfg.min_download_mbps ?? ''}
@@ -396,8 +386,8 @@ function AlertsTab({ toast }) {
             onChange={v => set('min_upload_mbps', v ? parseFloat(v) : null)} placeholder="e.g. 5" />
           <Inp label="Max ping (ms)" type="number" value={cfg.max_ping_ms ?? ''}
             onChange={v => set('max_ping_ms', v ? parseFloat(v) : null)} placeholder="e.g. 100" />
-          <Inp label="Alert cooldown (min)" type="number" value={cfg.cooldown_minutes}
-            onChange={v => set('cooldown_minutes', parseInt(v) || 30)} hint="Min wait between alerts" />
+          <Inp label="Cooldown period" type="number" value={cfg.cooldown_minutes}
+            onChange={v => set('cooldown_minutes', parseInt(v) || 30)} hint="Minimum time between consecutive alerts" />
         </div>
       </div>
 
@@ -412,7 +402,7 @@ function AlertsTab({ toast }) {
           <Inp label="Webhook URL" value={cfg.discord_webhook_url}
             onChange={v => set('discord_webhook_url', v)}
             placeholder="https://discord.com/api/webhooks/…"
-            hint="Server Settings → Integrations → Webhooks" />
+            hint="Create one in Discord: Server Settings → Integrations → Webhooks" />
         </ChannelCard>
 
         {/* Telegram */}
@@ -424,7 +414,7 @@ function AlertsTab({ toast }) {
             onChange={v => set('telegram_bot_token', v)}
             placeholder="110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
             hint="Create with @BotFather on Telegram" />
-          <Inp label="Chat ID" value={cfg.telegram_chat_id}
+          <Inp label="Chat or group ID" value={cfg.telegram_chat_id}
             onChange={v => set('telegram_chat_id', v)}
             placeholder="-1001234567890" hint="Get from @userinfobot" />
         </ChannelCard>
@@ -435,7 +425,7 @@ function AlertsTab({ toast }) {
           testing={testing === 'email'} onTest={() => testChannel('email')}
           accentColor="var(--accent-orange)">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <Inp label="SMTP host" value={cfg.email_smtp_host}
+            <Inp label="SMTP server" value={cfg.email_smtp_host}
               onChange={v => set('email_smtp_host', v)} placeholder="smtp.gmail.com" />
             <Inp label="Port" type="number" value={cfg.email_smtp_port}
               onChange={v => set('email_smtp_port', parseInt(v) || 587)} placeholder="587" />
@@ -444,12 +434,12 @@ function AlertsTab({ toast }) {
             <Inp label="Password" type="password" value={cfg.email_smtp_pass}
               onChange={v => set('email_smtp_pass', v)} placeholder="App password" />
           </div>
-          <Inp label="Send alerts to" value={cfg.email_to}
+          <Inp label="Recipient email" value={cfg.email_to}
             onChange={v => set('email_to', v)} placeholder="alerts@example.com" />
         </ChannelCard>
 
         {/* Webhook */}
-        <ChannelCard title="Generic Webhook" icon="🔗"
+        <ChannelCard title="Custom Webhook" icon="🔗"
           enabled={cfg.webhook_enabled} onToggle={v => set('webhook_enabled', v)}
           testing={testing === 'webhook'} onTest={() => testChannel('webhook')}
           accentColor="var(--accent-green)">
@@ -458,7 +448,7 @@ function AlertsTab({ toast }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
             <label style={{ fontSize: 11, fontFamily: 'var(--font-display)', fontWeight: 600,
                             color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Method
+              HTTP method
             </label>
             <select value={cfg.webhook_method} onChange={e => set('webhook_method', e.target.value)}
               style={{ padding: '8px 10px', background: 'var(--bg-elevated)',
@@ -472,7 +462,7 @@ function AlertsTab({ toast }) {
       </div>
 
       <button className="btn btn-primary" onClick={save} disabled={saving}>
-        <Save size={14} /> {saving ? 'Saving…' : 'Save all alert settings'}
+        <Save size={14} /> {saving ? 'Saving…' : 'Save alert settings'}
       </button>
     </div>
   )
@@ -515,7 +505,7 @@ function ChannelCard({ title, icon, enabled, onToggle, testing, onTest, accentCo
         <button className="btn btn-secondary" disabled={testing || !enabled}
           onClick={onTest}
           style={{ fontSize: 12, padding: '6px 12px', marginTop: 4 }}>
-          <Send size={12} /> {testing ? 'Sending…' : 'Send test'}
+          <Send size={12} /> {testing ? 'Sending…' : 'Send test notification'}
         </button>
       </div>
     </div>
@@ -567,14 +557,14 @@ function UsersTab({ toast }) {
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
-              All Users
+              Registered users
             </h3>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>
               {users.length} registered accounts
             </p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowNew(v => !v)} style={{ fontSize: 13 }}>
-            <Plus size={14} /> New user
+            <Plus size={14} /> Add user
           </button>
         </div>
 
@@ -599,7 +589,7 @@ function UsersTab({ toast }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              {['User', 'Email', 'Role', 'Joined', 'Actions'].map(h => (
+              {['User', 'Email', 'Role', 'Member since', 'Actions'].map(h => (
                 <th key={h} style={{ padding: '10px 18px', textAlign: 'left',
                                      fontFamily: 'var(--font-display)', fontSize: 11, fontWeight: 600,
                                      color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px',
@@ -683,8 +673,8 @@ export default function Settings() {
     { id: 'profile',  icon: User,     label: 'Profile' },
     ...(isAdmin ? [
       { id: 'backup',   icon: Database, label: 'Backup & Restore' },
-      { id: 'alerts',   icon: Bell,     label: 'Alerts' },
-      { id: 'users',    icon: Users,    label: 'Users' },
+      { id: 'alerts',   icon: Bell,     label: 'Alert Channels' },
+      { id: 'users',    icon: Users,    label: 'User Management' },
     ] : []),
   ]
 
@@ -696,7 +686,7 @@ export default function Settings() {
           Settings
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>
-          {isAdmin ? 'Admin settings — full access' : 'Manage your profile and preferences'}
+          {isAdmin ? 'Administrator account — full access' : 'Manage your profile and preferences'}
         </p>
       </div>
 
