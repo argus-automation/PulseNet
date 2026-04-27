@@ -1,0 +1,93 @@
+# ── Usage ──────────────────────────────────────────────────────────────────
+#  SQLite (default):   docker-compose up --build -d
+#  PostgreSQL:         docker-compose --profile postgres up --build -d
+#  MySQL/MariaDB:      docker-compose --profile mysql up --build -d
+# ───────────────────────────────────────────────────────────────────────────
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pulsenet-backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - speedtest-data:/data
+    networks:
+      - pulsenet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pulsenet-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pulsenet
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+
+  # ── PostgreSQL (optional) ─────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    container_name: pulsenet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       pulsenet
+      POSTGRES_USER:     pulsenet
+      POSTGRES_PASSWORD: pulsenet_secret
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - pulsenet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulsenet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── MySQL / MariaDB (optional) ────────────────────────────────────────────
+  mysql:
+    image: mariadb:11
+    profiles: ["mysql"]
+    container_name: pulsenet-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE:      pulsenet
+      MYSQL_USER:          pulsenet
+      MYSQL_PASSWORD:      pulsenet_secret
+      MYSQL_ROOT_PASSWORD: root_secret
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - pulsenet
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  speedtest-data:
+  postgres-data:
+  mysql-data:
+
+networks:
+  pulsenet:
+    driver: bridge
