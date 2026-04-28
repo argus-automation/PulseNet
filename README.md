@@ -80,6 +80,65 @@ PulseNet is a self-hosted SpeedTest Tracker that runs Ookla-powered speed tests 
 
 ---
 
+## Screenshots
+
+**Login Page**
+
+![login](./assets/login.png)
+
+---
+
+**Dark Mode**
+
+![image](./assets/dark.png)
+
+**Light Mode**
+
+![image](./assets/light.png)
+
+---
+
+**History**
+
+![image](./assets/history.png)
+
+---
+
+**Expanded Results**
+
+![image](./assets/results-expanded.png)
+
+---
+
+**Alert Scheduling**
+
+![image](./assets/schedule.png)
+
+---
+
+**Profile Management**
+
+![image](./assets/profile.png)
+
+---
+
+**Backup & Restore**
+
+![image](./assets/backup.png)
+
+---
+
+**Alert Threshold**
+
+![image](./assets/alert.png)
+
+---
+
+**User Management**
+
+![image](./assets/users.png)
+
+
 ## Tech Stack
 
 | Layer | Technology | Version |
@@ -294,6 +353,7 @@ DATABASE_URL=sqlite:///./data/speedtest.db
 ```
 
 > [!Note] Why the difference?
+>
 > SQLite connection strings follow this convention:
 > - `sqlite:///./data/speedtest.db` — **three slashes** = relative path from
 >   the working directory. Works anywhere.
@@ -681,7 +741,7 @@ Test payload: `{ "channel": "discord" }` — valid channels: `discord`, `telegra
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/health` | None | Health check; returns `{ "status": "ok", "version": "2.0.0" }` |
+| `GET` | `/api/health` | None | Health check; returns `{ "status": "ok", "version": "1.0.0" }` |
 
 Interactive API documentation is available at `http://localhost:8000/docs` when the backend is running.
 

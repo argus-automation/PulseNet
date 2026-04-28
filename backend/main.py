@@ -172,7 +172,7 @@ def require_admin(current: User = Depends(get_current_user)) -> User:
     return current
 
 # ─── FastAPI app ──────────────────────────────────────────────────────────────
-app = FastAPI(title="PulseNet API", version="2.0.0")
+app = FastAPI(title="PulseNet API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -629,7 +629,7 @@ def deactivate_user(user_id: int, db: Session = Depends(get_db),
 # ─── Health ───────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    return {"status": "ok", "version": "1.0.0"}
 
 # ─── Public stats (no auth — safe for login page) ────────────────────────────
 @app.get("/api/public/stats")
